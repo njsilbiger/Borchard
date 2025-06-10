@@ -36,5 +36,4 @@ ggplot(data, aes(year, log(number_sites+1)*bar_value, linetype = gump_criobe)) +
         axis.title.y = element_text(size = 14))
 
 ggsave(here("Output","datasets.png"), height = 5, width = 7)
-#ggplot(data, aes(year, number_sites*bar_value, fill = dataset)) +
- # geom_stream(type = "ridge")
+
