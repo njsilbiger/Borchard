@@ -23,8 +23,9 @@ ggplot(data, aes(year, log(number_sites+1)*bar_value,
   geom_area(aes(fill = dataset), color = "black")+
   #geom_hline(yintercept = 0, yend = 2025,linewidth = 1)+
   geom_segment(aes(y = 0, yend = 0, x = 1980, xend = 2025), size = 1)+
-  annotate(geom = "text", x = 1990, y = 20,label = "Gump", size = 8)+
-  annotate(geom = "text", x = 1990, y = -20, label = "CRIOBE", size = 8)+
+  geom_vline(xintercept = 2020, lty = 2)+
+  annotate(geom = "text", x = 1990, y = 20,label = "MCR", size = 8)+
+  annotate(geom = "text", x = 1990, y = -20, label = "SNO CORAIL", size = 8)+
   labs(y = "Number of Sites",
        x = "",
        fill = "")+
@@ -32,10 +33,11 @@ ggplot(data, aes(year, log(number_sites+1)*bar_value,
   scale_linetype_manual(values = c(1,1))+
   guides(linetype = "none")+
   theme_classic()+
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
+  theme(
+        axis.text.y = element_text(size = 14),
+       # axis.ticks.y = element_blank(),
         axis.text.x = element_text(size = 14),
         axis.title.y = element_text(size = 14))
 
-ggsave(here("Output","datasets.png"), height = 4, width = 8)
+ggsave(here("Output","datasets.pdf"), height = 4, width = 8)
 

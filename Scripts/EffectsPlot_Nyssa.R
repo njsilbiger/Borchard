@@ -9,6 +9,7 @@ library(tidyverse)
 library(lubridate)
 library(broom)
 library(patchwork)
+library(vegan)
 
 
 ### read in datasets ##### 
@@ -41,6 +42,62 @@ coral_lter_summary %>%
   geom_line()+
   facet_wrap(Site~Habitat)
 
+### Calculate richness per site and time
+coral_rich<-coral_lter_ff %>%
+  filter(Percent_Cover>0)%>%
+   filter(!Taxonomy_Substrate_or_Functional_Group %in% c("CTB", "Sand", "Macroalgae",
+                                                        "Non-coralline Crustose Algae",
+                                                        "Lithophyllon", 
+                                                        "Unknown or Other")) %>%
+  select(Date, Site,Habitat, Depth, Taxonomy_Substrate_or_Functional_Group) %>%
+  group_by(Date, Site, Habitat, Depth) %>%
+  distinct(Taxonomy_Substrate_or_Functional_Group) %>%
+  arrange(Date, Site, Habitat, Depth) %>%
+  ungroup() %>%
+  group_by(Date, Site, Habitat, Depth) %>%
+  count() %>%
+  separate(Date, sep = "-", into = c("Year","Month"))
+
+coral_rich %>%
+  ggplot(aes(x = Year, y = n, color = as.factor(Depth)))+
+  geom_point()+
+  #geom_line()+
+  facet_wrap(Site~Depth)
+
+coral_wide <- coral_lter_ff %>%
+  separate(Date, sep = "-", into = c("Year","Month")) %>%
+  filter(Percent_Cover>0)%>%
+  filter(!Taxonomy_Substrate_or_Functional_Group %in% c("CTB", "Sand", "Macroalgae",
+                                                        "Non-coralline Crustose Algae",
+                                                        "Lithophyllon", 
+                                                        "Unknown or Other")) %>%
+  pivot_wider(names_from = Taxonomy_Substrate_or_Functional_Group, 
+              values_from = Percent_Cover)
+
+
+coral_wide_species <- coral_wide %>%
+  select(Porites:Danafungia) %>%
+  mutate_all(as.numeric) %>%
+  mutate_all(.funs = function(x){ifelse(is.na(x), 0,x)})
+
+H<-diversity(coral_wide_species)
+R<-specnumber(coral_wide_species)
+
+
+coral_wide<-coral_wide %>%
+  bind_cols(H) %>%
+  rename("H" = `...40`) %>%
+  bind_cols(R)%>%
+  rename("R" = `...41`)
+
+coral_wide %>%
+  group_by(Year,Habitat, Site, Depth) %>%
+  summarise(mean_H = mean(H, na.rm = TRUE),
+            mean_R = mean(R, na.rm = TRUE)) %>% # quad level 
+  ggplot(aes(x = Year, y = mean_R, color = as.factor(Depth), group = as.factor(Depth) ))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(Habitat~Site)
 
 ### Cleaning coral data with Bob
 # Algae: sum all algae/turf, remove CCA
