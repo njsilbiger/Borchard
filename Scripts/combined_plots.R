@@ -229,10 +229,12 @@ map<-ggmap(basemap) +
   annotation_scale(location = "bl",  # "bl" for bottom left, other options: "br", "tl", "tr"
                    width_hint = 0.2) + # Suggested proportion of the plot area the scale bar occupies
   annotation_north_arrow(location = "tr", # "tr" for top right, other options: "br", "tl", "bl"
-                         which_north = "true" # Always points to true north
+                         which_north = "true", 
+                         width = unit(0.75, "cm"),
+                         height = unit(0.75, "cm") # Always points to true north
   ) # Choose from various styles (e.g., north_arrow_fancy_sf, north_arrow_nautical)
 
 
 ### bring everything together ######-----
 data_p+map +plot_annotation(tag_levels = "A")
-ggsave(here("Output","combined.pdf"), width = 12,height = 6)
+ggsave(here("Output","combined.pdf"), width = 12,height = 8)
