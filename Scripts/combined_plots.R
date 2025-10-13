@@ -1,5 +1,6 @@
-# Map of CRIOBE sites and MCR sites ######
-## By Nyssa Silbiger ##########
+### Combined Map and datasets plots###
+# By Nyssa Silbiger ###
+
 
 
 # load libraries ####
@@ -15,8 +16,39 @@ library(osmdata)
 library(units)
 library(ggrepel)
 library(ggspatial)
+library(broom)
+library(ggstream)
+
+## Datasets plots first------------------
+## read in data -----
+data<- read_csv(here("Data","bar_graph_data_entry.csv"))
+
+pal <- wes_palette("Zissou1", 15, type = "continuous")
+
+data_p<-ggplot(data, aes(year, log(number_sites+1)*bar_value, 
+                 linetype = gump_criobe)) +
+  geom_area(aes(fill = dataset), color = "black")+
+  #geom_hline(yintercept = 0, yend = 2025,linewidth = 1)+
+  geom_segment(aes(y = 0, yend = 0, x = 1980, xend = 2025), size = 1)+
+  geom_vline(xintercept = 2020, lty = 2)+
+  annotate(geom = "text", x = 1990, y = 20,label = "MCR", size = 5)+
+  annotate(geom = "text", x = 1990, y = -20, label = "SNO CORAIL", size = 5)+
+  labs(y = "Number of Sites",
+       x = "Year",
+       fill = "")+
+  scale_fill_manual(values = pal)+
+  scale_linetype_manual(values = c(1,1))+
+  guides(linetype = "none")+
+  theme_classic()+
+  theme(
+    axis.text.y = element_text(size = 14),
+    axis.title = element_text(size = 14, face = "bold"),
+    # axis.ticks.y = element_blank(),
+    axis.text.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14))
 
 
+### Map plot next-------------
 ## MCR Data
 # Lagoon temperature
 
@@ -46,13 +78,13 @@ params<-unique(criobe_clean$variable)
 # put these into categories 
 criobe_mapdata<-criobe_clean %>%
   mutate(category = case_when(variable %in% c("Coral","Coral","Reef 3D model",
-                            "Macro invertebrate","Reef rugosity") ~ "Benthic",
-            variable %in% c("Fish")~"Fish",
-            variable %in% c("Oxygen","pH","Conductivity","Salinity","fluorimetry",
-                            "Phosphate","nitrates","nitrites","carbonates","Silica",
-                            "Ammonium","Turbidity")~"Biogeochemical",
-            variable == "Temperature"~"Temperature",
-            variable %in% c("Significant height","Significant period")~"Physical Oceanography")) %>%
+                                              "Macro invertebrate","Reef rugosity") ~ "Benthic",
+                              variable %in% c("Fish")~"Fish",
+                              variable %in% c("Oxygen","pH","Conductivity","Salinity","fluorimetry",
+                                              "Phosphate","nitrates","nitrites","carbonates","Silica",
+                                              "Ammonium","Turbidity")~"Biogeochemical",
+                              variable == "Temperature"~"Temperature",
+                              variable %in% c("Significant height","Significant period")~"Physical Oceanography")) %>%
   select(!variable) %>%
   distinct() %>%
   drop_na() %>%
@@ -67,12 +99,12 @@ mapdata<-criobe_mapdata %>%
 
 
 stations<-tibble(site  =c("Gump Research Station","CRIOBE"), # -17.49556,-149.87278
-       latitude  =c(-17.49048,-17.5198), 
-       longitude = c(-149.82637,-149.8522)) 
+                 latitude  =c(-17.49048,-17.5198), 
+                 longitude = c(-149.82637,-149.8522)) 
 
 stations_sf<-st_as_sf(stations,
-  coords = c("longitude", "latitude"),  # specify coordinate columns
-  crs = 4326                 # WGS84 latitude/longitude CRS)
+                      coords = c("longitude", "latitude"),  # specify coordinate columns
+                      crs = 4326                 # WGS84 latitude/longitude CRS)
 )
 
 # 1) Get Mo'orea polygon from OSM and pad it by ~3 km so tiles include the coast
@@ -197,8 +229,9 @@ map<-ggmap(basemap) +
                    width_hint = 0.2) + # Suggested proportion of the plot area the scale bar occupies
   annotation_north_arrow(location = "tr", # "tr" for top right, other options: "br", "tl", "bl"
                          which_north = "true" # Always points to true north
-                         ) # Choose from various styles (e.g., north_arrow_fancy_sf, north_arrow_nautical)
-# ---- Optional: save to file ----
-# ggsave("moorea_map.png", p, width = 8, height = 6, dpi = 300)
+  ) # Choose from various styles (e.g., north_arrow_fancy_sf, north_arrow_nautical)
 
-ggsave(filename = here("Output","map.pdf"),map, height = 8, width = 8)
+
+### bring everything together ######-----
+data_p+map +plot_annotation(tag_levels = "A")
+ggsave(here("Output","combined.pdf"), width = 12,height = 6)
