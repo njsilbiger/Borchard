@@ -197,12 +197,12 @@ map<-ggmap(basemap) +
         linewidth = 0.6
       )
   }  +
-  geom_point(data = stations, aes(x = longitude, y = latitude), size = 2)+
-  geom_text_repel(data = stations, 
-                  aes(x = longitude, y = latitude, 
-                      label = site,
-                      fontface = "bold"),
-                  nudge_y = -0.01, size = 5)+
+  # geom_point(data = stations, aes(x = longitude, y = latitude), size = 2)+
+  # geom_text_repel(data = stations, 
+  #                 aes(x = longitude, y = latitude, 
+  #                     label = site,
+  #                     fontface = "bold"),
+  #                 nudge_y = -0.01, size = 5)+
   geom_sf(data = sites_jit, inherit.aes = FALSE, size = 2.5, 
           aes(fill = category, shape = site), alpha = 0.5)+ 
   scale_fill_manual(values = colors)+
@@ -212,12 +212,13 @@ map<-ggmap(basemap) +
        y = "Latitude",
        fill = "Data Category",
        shape = "Research Program")+
-  theme_minimal(base_size = 12) +
+  theme_classic(base_size = 12) +
   theme(
     legend.title = element_text(face = "bold", size = 14),
     legend.text = element_text(size=12),
     axis.title = element_text(size = 14, face = "bold"),
-    panel.grid = element_blank()
+    panel.grid.major = element_line(color = "grey")
+   # panel.grid = element_blank()
   ) +
   coord_sf(
     xlim = c(bbox["left"], bbox["right"]),
